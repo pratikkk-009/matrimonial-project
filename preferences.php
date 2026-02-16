@@ -1,0 +1,8 @@
+<?php require_once __DIR__ . '/src/auth.php'; require_login(); $user = current_user(); $stmt = $pdo->prepare('SELECT * FROM partner_preferences WHERE user_id = ?'); $stmt->execute([$user['id']]); $pref = $stmt->fetch(); $msg=''; if($_SERVER['REQUEST_METHOD']==='POST'){ $age_from = (int)($_POST['age_from'] ?? 0); $age_to = (int)($_POST['age_to'] ?? 0); $education = trim($_POST['education'] ?? ''); $city = trim($_POST['city'] ?? ''); if($pref){ $pdo->prepare('UPDATE partner_preferences SET preferred_age_from=?, preferred_age_to=?, preferred_education=?, preferred_city=? WHERE user_id=?')->execute([$age_from, $age_to, $education, $city, $user['id']]); } else { $pdo->prepare('INSERT INTO partner_preferences (user_id, preferred_age_from, preferred_age_to, preferred_education, preferred_city) VALUES (?,?,?,?,?)')->execute([$user['id'], $age_from, $age_to, $education, $city]); } $msg='Preferences saved.'; } ?>
+
+<?php include 'header.php'; ?>
+	<h1>Partner Preferences</h1>
+	<?php if($msg) echo '<p style="color:green">'.htmlspecialchars($msg).'</p>'; ?>
+	<form method="post"><label>Age from: <input name="age_from" value="<?php echo htmlspecialchars($pref['preferred_age_from'] ?? ''); ?>"></label><br><label>Age to: <input name="age_to" value="<?php echo htmlspecialchars($pref['preferred_age_to'] ?? ''); ?>"></label><br><label>Education: <input name="education" value="<?php echo htmlspecialchars($pref['preferred_education'] ?? ''); ?>"></label><br><label>City: <input name="city" value="<?php echo htmlspecialchars($pref['preferred_city'] ?? ''); ?>"></label><br><button>Save</button></form>
+	<p><a href="profile.php">Back to Profile</a></p>
+<?php include 'footer.php'; ?>
